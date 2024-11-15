@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
   images: {
-    domains: ["via.assets.so"], // Allow loading images from this domain
+    domains: ["via.assets.so"],
   },
 };
 
