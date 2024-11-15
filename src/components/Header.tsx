@@ -8,7 +8,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cart }) => {
   return (
-    <header className="p-4 bg-blue-500 text-white w-full flex flex-row items-center justify-between">
+    <header className="shadow-lg fixed z-50 p-4 bg-blue-500 text-white w-full flex flex-row items-center justify-between">
       <h1 className="md:text-lg font-semibold text-md">greyball store</h1>
       <div>
         <p className="md:text-lg font-semibold text-sm">

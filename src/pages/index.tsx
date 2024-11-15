@@ -1,4 +1,4 @@
-"use client";
+import { useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -6,59 +6,61 @@ import { addItemToCart, removeItemFromCart } from "@/redux/cartSlice";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import SearchBar from "@/components/SearchBar";
-import { useState } from "react";
 import { Product } from "@/types/Product";
 
 interface ProductListingProps {
-  products: Product[];
+  initialProducts: Product[];
 }
 
-const ProductListing: React.FC<ProductListingProps> = ({ products }) => {
+const ProductListing: React.FC<ProductListingProps> = ({ initialProducts }) => {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"price" | "rating" | null>(null); // No sorting initially
+  const [sortBy, setSortBy] = useState<"price" | "rating" | null>(null);
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart);
 
-  // Handle toggling sorting
-  const toggleSortBy = (criteria: "price" | "rating") => {
-    setSortBy(sortBy === criteria ? null : criteria);
+  const fetchProducts = async (pageNumber: number) => {
+    const response = await fetch(
+      `http://localhost:3030/products?page=${pageNumber}`
+    );
+    const newProducts: Product[] = await response.json();
+    setProducts(newProducts);
   };
 
-  // Filter products based on search term
+  useEffect(() => {
+    fetchProducts(page);
+  }, [page]);
+
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort only when sortBy is set
-  const sortedProducts = sortBy
-    ? [...filteredProducts].sort((a, b) =>
-        sortBy === "price" ? a.price - b.price : b.rating - a.rating
-      )
-    : filteredProducts;
+  const sortedProducts = filteredProducts.sort((a, b) => {
+    if (sortBy === null) return 0; // No sorting when sortBy is null
+    return sortBy === "price" ? a.price - b.price : b.rating - a.rating;
+  });
 
   return (
     <>
       <Header cart={cart} />
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 pt-24">
         <SearchBar setSearchTerm={setSearchTerm} />
         <div className="flex justify-between pb-4">
           <button
-            onClick={() => toggleSortBy("price")}
-            className={`${
-              sortBy === "price" ? "bg-green-500 text-white" : "text-black"
-            } border p-2 rounded-xl`}
+            onClick={() => setSortBy(sortBy === "price" ? null : "price")}
+            className={`${sortBy === "price" ? "bg-green-500 text-white" : "text-black"} border p-2 rounded-xl`}
           >
-            {sortBy === "price" ? "Reset" : "Sort by Price"}
+            Sort by Price
           </button>
           <button
-            onClick={() => toggleSortBy("rating")}
-            className={`${
-              sortBy === "rating" ? "bg-green-500 text-white" : "text-black"
-            } border p-2 rounded-xl`}
+            onClick={() => setSortBy(sortBy === "rating" ? null : "rating")}
+            className={`${sortBy === "rating" ? "bg-green-500 text-white" : "text-black"} border p-2 rounded-xl`}
           >
-            {sortBy === "rating" ? "Reset" : "Sort by Rating"}
+            Sort by Rating
           </button>
         </div>
+
         {sortedProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-4">
             {sortedProducts.map((product) => {
@@ -81,16 +83,33 @@ const ProductListing: React.FC<ProductListingProps> = ({ products }) => {
             No products with such name
           </div>
         )}
+
+        <div className="flex justify-between pt-4">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+            className="border p-2 rounded-xl"
+          >
+            Previous
+          </button>
+          <span className="p-2">{`Page ${page}`}</span>
+          <button
+            onClick={() => setPage(page + 1)}
+            className="border p-2 rounded-xl"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </>
   );
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const res = await fetch("http://localhost:3030/products");
-  const products: Product[] = await res.json();
+  const res = await fetch("http://localhost:3030/products?page=1");
+  const initialProducts: Product[] = await res.json();
 
-  return { props: { products } };
+  return { props: { initialProducts } };
 };
 
 export default ProductListing;
