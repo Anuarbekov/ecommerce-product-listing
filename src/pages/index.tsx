@@ -15,17 +15,26 @@ interface ProductListingProps {
 
 const ProductListing: React.FC<ProductListingProps> = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"price" | "rating">("price");
+  const [sortBy, setSortBy] = useState<"price" | "rating" | null>(null); // No sorting initially
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart);
 
+  // Handle toggling sorting
+  const toggleSortBy = (criteria: "price" | "rating") => {
+    setSortBy(sortBy === criteria ? null : criteria);
+  };
+
+  // Filter products based on search term
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedProducts = filteredProducts.sort((a, b) =>
-    sortBy === "price" ? a.price - b.price : b.rating - a.rating
-  );
+  // Sort only when sortBy is set
+  const sortedProducts = sortBy
+    ? [...filteredProducts].sort((a, b) =>
+        sortBy === "price" ? a.price - b.price : b.rating - a.rating
+      )
+    : filteredProducts;
 
   return (
     <>
@@ -34,34 +43,44 @@ const ProductListing: React.FC<ProductListingProps> = ({ products }) => {
         <SearchBar setSearchTerm={setSearchTerm} />
         <div className="flex justify-between pb-4">
           <button
-            onClick={() => setSortBy("price")}
-            className={`${sortBy == "price" ? "bg-green-500 text-white" : "text-black"} border p-2 rounded-xl`}
+            onClick={() => toggleSortBy("price")}
+            className={`${
+              sortBy === "price" ? "bg-green-500 text-white" : "text-black"
+            } border p-2 rounded-xl`}
           >
-            Sort by Price
+            {sortBy === "price" ? "Reset" : "Sort by Price"}
           </button>
           <button
-            onClick={() => setSortBy("rating")}
-            className={`${sortBy == "rating" ? "bg-green-500 text-white" : "text-black"} border p-2 rounded-xl`}
+            onClick={() => toggleSortBy("rating")}
+            className={`${
+              sortBy === "rating" ? "bg-green-500 text-white" : "text-black"
+            } border p-2 rounded-xl`}
           >
-            Sort by Rating
+            {sortBy === "rating" ? "Reset" : "Sort by Rating"}
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          {sortedProducts.map((product) => {
-            const isInCart = cart.items.some(
-              (cartItem) => cartItem.id === product.id
-            );
-            return (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={() => dispatch(addItemToCart(product))}
-                onRemoveFromCart={() => dispatch(removeItemFromCart(product))}
-                isInCart={isInCart}
-              />
-            );
-          })}
-        </div>
+        {sortedProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-4">
+            {sortedProducts.map((product) => {
+              const isInCart = cart.items.some(
+                (cartItem) => cartItem.id === product.id
+              );
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={() => dispatch(addItemToCart(product))}
+                  onRemoveFromCart={() => dispatch(removeItemFromCart(product))}
+                  isInCart={isInCart}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-lg font-semibold">
+            No products with such name
+          </div>
+        )}
       </div>
     </>
   );

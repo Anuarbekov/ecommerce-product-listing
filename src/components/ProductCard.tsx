@@ -1,6 +1,7 @@
 import React from "react";
 import { Product } from "@/types/Product";
 import Image from "next/image";
+import { formatPrice } from "@/utils/priceUtils";
 interface ProductCardProps {
   product: Product;
   onAddToCart: () => void;
@@ -14,7 +15,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isInCart,
   onRemoveFromCart,
 }) => (
-  <div className="border p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+  <div className="border md:p-4 p-2 rounded-lg shadow-md hover:shadow-lg transition duration-300">
     <Image
       src={product.image}
       alt={product.title}
@@ -25,7 +26,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <h2 className="text-xl font-semibold">{product.title}</h2>
     <p className="text-sm text-gray-500 truncate">{product.description}</p>
     <p className="text-lg font-bold mt-2">
-      {product.currency} {product.price.toFixed(2)}
+      {formatPrice(product.price, product.currency)}
     </p>
     <div className="flex items-center mt-2">
       <span className="text-yellow-500">★</span>

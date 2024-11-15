@@ -1,6 +1,6 @@
 import React from "react";
 
-import { CartState } from "../redux/cartSlice";
+import { CartState } from "@/redux/cartSlice";
 
 interface HeaderProps {
   cart: CartState;
@@ -8,20 +8,15 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cart }) => {
   return (
-    <header className="p-4 bg-blue-500 text-white w-full flex flex-row items-center">
-      <h1 className="text-lg font-bold">E-commerce Store</h1>
-      <div className="ml-auto">
-        <p>Items in Cart: {cart.totalQuantity}</p>
-        <p>Total Price: ${cart.totalPrice.toFixed(2)}</p>
-      </div>
+    <header className="p-4 bg-blue-500 text-white w-full flex flex-row items-center justify-between">
+      <h1 className="md:text-lg font-semibold text-md">greyball store</h1>
       <div>
-        {cart.items?.map((item) => (
-          <div key={item.id}>
-            <p>
-              {item.title} - ${item.price.toFixed(2)}
-            </p>
-          </div>
-        ))}
+        <p className="md:text-lg font-semibold text-sm">
+          Items in Cart: {cart.totalQuantity}
+        </p>
+        <p className="md:text-lg font-semibold text-sm">
+          Total Price: ${cart.totalPrice.toFixed(2)}
+        </p>
       </div>
     </header>
   );
